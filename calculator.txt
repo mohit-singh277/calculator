@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #121212;
+        }
+        
+        .calculator {
+            width: 100%;
+            max-width: 400px;
+            background-color: #1e1e1e;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .display {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #2d2d2d;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 2.5rem;
+            text-align: right;
+            border: none;
+            outline: none;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 15px;
+        }
+        
+        button {
+            height: 70px;
+            border-radius: 15px;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+        
+        .number {
+            background-color: #333333;
+            color: white;
+        }
+        
+        .operator {
+            background-color: #ff9500;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .function {
+            background-color: #a5a5a5;
+            color: black;
+            font-size: 1.6rem;
+        }
+        
+        .equals {
+            background-color: #ff9500;
+            color: white;
+            grid-column: span 1;
+            font-size: 2rem;
+        }
+        
+        .zero {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" class="display" id="display" readonly>
+        <div class="buttons">
+            <button class="function">AC</button>
+            <button class="function">±</button>
+            <button class="function">%</button>
+            <button class="operator">÷</button>
+            
+            <button class="number">7</button>
+            <button class="number">8</button>
+            <button class="number">9</button>
+            <button class="operator">×</button>
+            
+            <button class="number">4</button>
+            <button class="number">5</button>
+            <button class="number">6</button>
+            <button class="operator">-</button>
+            
+            <button class="number">1</button>
+            <button class="number">2</button>
+            <button class="number">3</button>
+            <button class="operator">+</button>
+            
+            <button class="number zero">0</button>
+            <button class="number">.</button>
+            <button class="equals">=</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        const buttons = document.querySelectorAll('button');
+        
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let resetScreen = false;
+        
+        function updateDisplay() {
+            display.value = currentInput;
+        }
+        
+        function appendNumber(number) {
+            if (currentInput === '0' || resetScreen) {
+                currentInput = number;
+                resetScreen = false;
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+        }
+        
+        function appendDecimal() {
+            if (resetScreen) {
+                currentInput = '0.';
+                resetScreen = false;
+                updateDisplay();
+                return;
+            }
+            if (currentInput.includes('.')) return;
+            currentInput += '.';
+            updateDisplay();
+        }
+        
+        function handleOperator(op) {
+            if (operation !== null) {
+                // If we already have an operation, calculate the result first
+                calculate();
+            }
+            previousInput = currentInput;
+            operation = op;
+            resetScreen = true;
+            updateDisplay();
+        }
+        
+        function calculate() {
+            if (operation === null || resetScreen) return;
+            
+            const current = parseFloat(currentInput);
+            const previous = parseFloat(previousInput);
+            
+            if (isNaN(current) || isNaN(previous)) return;
+            
+            let result;
+            switch (operation) {
+                case '+':
+                    result = previous + current;
+                    break;
+                case '-':
+                    result = previous - current;
+                    break;
+                case '×':
+                    result = previous * current;
+                    break;
+                case '÷':
+                    result = previous / current;
+                    break;
+                case '%':
+                    result = previous % current;
+                    break;
+                default:
+                    return;
+            }
+            
+            currentInput = result.toString();
+            operation = null;
+            resetScreen = true;
+            updateDisplay();
+        }
+        
+        function clearAll() {
+            currentInput = '0';
+            previousInput = '';
+            operation = null;
+            resetScreen = false;
+            updateDisplay();
+        }
+        
+        function toggleSign() {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+        }
+        
+        function handleButtonClick(e) {
+            const value = e.target.textContent;
+            
+            if (value >= '0' && value <= '9') {
+                appendNumber(value);
+            } else if (value === '.') {
+                appendDecimal();
+            } else if (value === 'AC') {
+                clearAll();
+            } else if (value === '±') {
+                toggleSign();
+            } else if (value === '=') {
+                calculate();
+            } else {
+                handleOperator(value);
+            }
+        }
+        
+        buttons.forEach(button => {
+            button.addEventListener('click', handleButtonClick);
+        });
+        
+        updateDisplay();
+    </script>
+</body>
+</html>
